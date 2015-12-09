@@ -20,7 +20,8 @@ type ProjectReference =
     { Path : string
       RelativePath : string
       Name : string
-      GUID : Guid }
+      GUID : Guid
+      VersionConstraint : string option }
 
 /// Compile items inside of project files.
 type CompileItem = 
@@ -859,7 +860,11 @@ type ProjectFile =
                 Path.Combine(di.FullName,p) |> Path.GetFullPath
               RelativePath = node.Attributes.["Include"].Value
               Name = forceGetInnerText node "Name"
-              GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
+              GUID =  forceGetInnerText node "Project" |> Guid.Parse
+              VersionConstraint =
+                node
+                |> getNode "PaketVersionConstraint"
+                |> Option.map (fun node -> node.InnerText) }]
 
     member this.ReplaceNuGetPackagesFile() =
         let noneAndContentNodes = 

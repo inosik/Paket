@@ -47,3 +47,10 @@ let ``should detect Guids for dependencies in Project2 proj file``() =
     p.GetInterProjectDependencies()
     |> List.map (fun p -> p.GUID.ToString())
     |> shouldEqual ["09b32f18-0c20-4489-8c83-5106d5c04c93"; "7bab0ae2-089f-4761-b138-a717aa2f86c5"]
+
+[<Test>]
+let ``should be able to get PaketVersionConstraint, if there is any``() =
+    let p = ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithDependencies.fsprojtest").Value
+    p.GetInterProjectDependencies()
+    |> List.map (fun p -> p.VersionConstraint)
+    |> shouldEqual [None; Some "~> 1.2.3"]
