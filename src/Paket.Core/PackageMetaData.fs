@@ -135,14 +135,14 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         | ProjectOutputType.Library -> sprintf "lib/%O/" (project.GetTargetProfile())
     
     let projectDir = Path.GetDirectoryName project.FileName
-    
-    let deps, files = 
-        project.GetInterProjectDependencies() 
-        |> Seq.fold (fun (deps, files) p -> 
+
+    let deps, files =
+        project.GetInterProjectDependencies()
+        |> Seq.fold (fun (deps, files) p ->
             match Map.tryFind p.Path map with
-            | Some packagedRef -> packagedRef :: deps, files
-            | None -> 
-                let p = 
+            | Some (template, projectFile) -> (template, projectFile, p.VersionConstraint) :: deps, files
+            | None ->
+                let p =
                     match ProjectFile.TryLoad(Path.Combine(projectDir, p.RelativePath) |> normalizePath) with
                     | Some p -> p
                     | _ -> failwithf "Missing project reference in proj file %s" p.RelativePath
@@ -170,16 +170,21 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     // If project refs will also be packaged, add dependency
     let withDeps = 
         deps
-        |> List.map (fun (templateFile,_) ->
+        |> List.map (fun (templateFile, _, versionConstraint) ->
             match templateFile with
             | CompleteTemplate(core, opt) -> 
                 match core.Version with
                 | Some v ->
-                    let versionConstraint =
-                        if not lockDependencies
-                        then Minimum v
-                        else Specific v
-                    PackageName core.Id, VersionRequirement(versionConstraint, PreReleaseStatus.No)
+                    let requirement =
+                        match versionConstraint with
+                        | Some c -> DependenciesFileParser.parseVersionRequirement c
+                        | None ->
+                            let versionConstraint =
+                                if not lockDependencies
+                                then Minimum v
+                                else Specific v
+                            VersionRequirement(versionConstraint, PreReleaseStatus.No)
+                    PackageName core.Id, requirement
                 | None ->failwithf "There was no version given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
