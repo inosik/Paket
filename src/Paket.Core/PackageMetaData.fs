@@ -177,7 +177,12 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                 | Some v ->
                     let requirement =
                         match versionConstraint with
-                        | Some c -> DependenciesFileParser.parseVersionRequirement c
+                        | Some c ->
+                            let c = c.Replace("M", string v.Major)
+                                     .Replace("m", string v.Minor)
+                                     .Replace("p", string v.Patch)
+                                     .Replace("b", v.Build)
+                            DependenciesFileParser.parseVersionRequirement c
                         | None ->
                             let versionConstraint =
                                 if not lockDependencies
