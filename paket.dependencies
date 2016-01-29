@@ -4,6 +4,7 @@ nuget Newtonsoft.Json redirects: force
 nuget Argu
 nuget FSharp.Core redirects: force
 nuget Chessie
+nuget ZipStorer
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsharp/FSharp.Data src/CommonProviderImplementation/AssemblyReader.fs

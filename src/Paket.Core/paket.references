@@ -1,5 +1,6 @@
 Newtonsoft.Json
 FSharp.Core
 Chessie
+ZipStorer
 File:Globbing.fs .
 File:AssemblyReader.fs .

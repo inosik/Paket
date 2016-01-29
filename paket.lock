@@ -6,6 +6,7 @@ NUGET
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
     Newtonsoft.Json (8.0.2) - redirects: force
+    ZipStorer (2.38)
 GITHUB
   remote: fsharp/FAKE
   specs:
