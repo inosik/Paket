@@ -193,7 +193,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         File.Delete outputPath
 
     use zipToCreate = new FileStream(outputPath, FileMode.Create)
-    use zipFile = new ZipArchive(zipToCreate,ZipArchiveMode.Create)
+    use zipFile = ZipStorer.Create (zipToCreate, null)
 
     let entries = System.Collections.Generic.List<_>()
 
@@ -267,15 +267,15 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     let addEntry path writerF =
         if entries.Contains(path) then () else
         entries.Add path |> ignore
-        let entry = zipFile.CreateEntry(path)
-        use stream = entry.Open()
+        use stream = new MemoryStream()
         writerF stream
+        zipFile.AddStream (ZipStorer.Compression.Deflate, path, stream, DateTime.UtcNow, null)
         stream.Close()
 
     let addEntryFromFile path source =
         if entries.Contains(path) then () else
         entries.Add path |> ignore
-        zipFile.CreateEntryFromFile(source,path) |> ignore
+        zipFile.AddFile (ZipStorer.Compression.Deflate, source, path, null)
 
     let ensureValidTargetName (target:string) =
         let target = ensureValidName target
